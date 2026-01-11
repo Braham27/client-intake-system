@@ -1,0 +1,349 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// CLIENT & INTAKE MODELS
+// ============================================
+
+model Client {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  firstName       String
+  lastName        String
+  phone           String?
+  company         String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  intakeForms     IntakeForm[]
+  consultations   Consultation[]
+  payments        Payment[]
+  files           UploadedFile[]
+}
+
+model IntakeForm {
+  id              String   @id @default(uuid())
+  clientId        String?
+  client          Client?  @relation(fields: [clientId], references: [id])
+  
+  // Form status
+  status          String   @default("draft") // draft, submitted, reviewed, approved, in_progress, completed
+  currentStep     Int      @default(1)
+  completedSteps  String   @default("[]") // JSON array of completed step numbers
+  resumeToken     String   @unique @default(uuid())
+  
+  // Step 1: Basic Contact & Business Information
+  contactFirstName    String?
+  contactLastName     String?
+  contactEmail        String?
+  contactPhone        String?
+  businessName        String?
+  businessAddress     String?
+  businessCity        String?
+  businessState       String?
+  businessZip         String?
+  businessCountry     String?
+  industry            String?
+  businessDescription String?
+  yearsInBusiness     String?
+  
+  // Step 2: Website Goals and Purpose
+  websiteGoals        String?  // JSON array
+  primaryPurpose      String?
+  whyNewWebsite       String?
+  currentWebsiteUrl   String?
+  currentChallenges   String?
+  targetAudience      String?
+  uniqueSellingPoints String?
+  
+  // Step 3: Desired Features & Functionality
+  features            String?  // JSON array
+  needsBlog           Boolean  @default(false)
+  needsContactForm    Boolean  @default(false)
+  needsGallery        Boolean  @default(false)
+  needsSocialMedia    Boolean  @default(false)
+  needsCalendar       Boolean  @default(false)
+  needsSearch         Boolean  @default(false)
+  needsNewsletter     Boolean  @default(false)
+  needsLiveChat       Boolean  @default(false)
+  needsAnalytics      Boolean  @default(false)
+  needsMultiLanguage  Boolean  @default(false)
+  otherFeatures       String?
+  
+  // E-commerce specific
+  needsEcommerce      Boolean  @default(false)
+  productCount        String?
+  productTypes        String?  // physical, digital, services
+  paymentGateways     String?  // JSON array
+  needsInventory      Boolean  @default(false)
+  needsShipping       Boolean  @default(false)
+  shippingRegions     String?
+  taxRequirements     String?
+  ecommercePlatform   String?
+  
+  // Membership specific
+  needsMembership     Boolean  @default(false)
+  membershipContent   String?
+  membershipPaid      Boolean  @default(false)
+  membershipTiers     String?
+  membershipPayment   String?
+  
+  // Step 4: Design Preferences & Branding
+  hasExistingBranding Boolean  @default(false)
+  brandColors         String?
+  brandFonts          String?
+  designStyle         String?  // modern, classic, minimalist, bold, playful
+  websiteExamples     String?  // URLs they like
+  websiteExamplesNotes String?
+  avoidDesignElements String?
+  
+  // Step 5: Content Provision & Assets
+  contentProvider     String?  // client, need_copywriting, mixed
+  hasExistingContent  Boolean  @default(false)
+  needsContentMigration Boolean @default(false)
+  needsPhotography    Boolean  @default(false)
+  needsStockImages    Boolean  @default(false)
+  estimatedPages      String?
+  
+  // Step 6: Domain, Hosting & Technical Setup
+  hasDomain           Boolean  @default(false)
+  domainName          String?
+  needsDomainPurchase Boolean  @default(false)
+  preferredDomain     String?
+  hasHosting          Boolean  @default(false)
+  hostingProvider     String?
+  needsHostingSetup   Boolean  @default(false)
+  needsDomainTransfer Boolean  @default(false)
+  technicalNotes      String?
+  
+  // Step 7: Timeline and Budget
+  targetLaunchDate    DateTime?
+  isFlexibleTimeline  Boolean  @default(true)
+  budgetRange         String?
+  budgetNotes         String?
+  
+  // Step 8: Competitors and Inspiration
+  competitors         String?  // JSON array of URLs
+  competitorNotes     String?
+  industryInspirations String?
+  
+  // Step 9: Maintenance & Ongoing Services
+  needsMaintenance    Boolean  @default(false)
+  maintenanceLevel    String?  // basic, standard, premium
+  needsTraining       Boolean  @default(false)
+  ongoingNotes        String?
+  
+  // Step 10: Additional Comments
+  additionalComments  String?
+  specialRequirements String?
+  accessibilityNeeds  String?
+  
+  // Agreement & Signature
+  agreedToTerms       Boolean  @default(false)
+  termsAgreedAt       DateTime?
+  signatureData       String?  // Base64 signature image
+  signedAt            DateTime?
+  signedName          String?
+  signedIpAddress     String?
+  
+  // Calculated quote
+  estimatedQuote      Float?
+  quoteDetails        String?  // JSON
+  
+  // Timestamps
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  submittedAt         DateTime?
+  
+  // Relations
+  files               UploadedFile[]
+  payments            Payment[]
+  
+  @@index([status])
+  @@index([resumeToken])
+  @@index([contactEmail])
+}
+
+model Consultation {
+  id              String   @id @default(uuid())
+  clientId        String?
+  client          Client?  @relation(fields: [clientId], references: [id])
+  
+  // Contact info (if no client record yet)
+  firstName       String
+  lastName        String
+  email           String
+  phone           String?
+  company         String?
+  
+  // Scheduling
+  scheduledDate   DateTime
+  duration        Int      @default(30) // minutes
+  timezone        String   @default("America/New_York")
+  
+  // Meeting details
+  meetingType     String   @default("video") // video, phone
+  meetingLink     String?
+  meetingNotes    String?
+  
+  // Topics to discuss
+  topics          String?
+  projectBrief    String?
+  
+  // Status
+  status          String   @default("scheduled") // scheduled, completed, cancelled, no_show
+  confirmedAt     DateTime?
+  completedNotes  String?
+  
+  // Reminders
+  reminder24hSent Boolean  @default(false)
+  reminder1hSent  Boolean  @default(false)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([scheduledDate])
+  @@index([status])
+}
+
+model Payment {
+  id              String   @id @default(uuid())
+  clientId        String?
+  client          Client?  @relation(fields: [clientId], references: [id])
+  intakeFormId    String?
+  intakeForm      IntakeForm? @relation(fields: [intakeFormId], references: [id])
+  
+  // Payment details
+  amount          Float
+  currency        String   @default("usd")
+  description     String?
+  paymentType     String   @default("deposit") // deposit, milestone, final, subscription
+  
+  // Stripe
+  stripePaymentId String?  @unique
+  stripeCustomerId String?
+  stripeInvoiceId String?
+  
+  // Status
+  status          String   @default("pending") // pending, processing, succeeded, failed, refunded
+  paidAt          DateTime?
+  failedAt        DateTime?
+  failureReason   String?
+  
+  // Refund
+  refundedAmount  Float?
+  refundedAt      DateTime?
+  refundReason    String?
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  @@index([status])
+  @@index([stripePaymentId])
+}
+
+model UploadedFile {
+  id              String   @id @default(uuid())
+  clientId        String?
+  client          Client?  @relation(fields: [clientId], references: [id])
+  intakeFormId    String?
+  intakeForm      IntakeForm? @relation(fields: [intakeFormId], references: [id])
+  
+  // File info
+  fileName        String
+  originalName    String
+  fileType        String
+  fileSize        Int
+  filePath        String
+  
+  // Categorization
+  category        String   @default("general") // logo, branding, content, reference, other
+  description     String?
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([intakeFormId])
+  @@index([category])
+}
+
+// ============================================
+// ADMIN & SETTINGS
+// ============================================
+
+model AdminUser {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  passwordHash    String
+  firstName       String
+  lastName        String
+  role            String   @default("admin") // admin, manager
+  isActive        Boolean  @default(true)
+  
+  lastLoginAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Setting {
+  id              String   @id @default(uuid())
+  key             String   @unique
+  value           String
+  type            String   @default("string") // string, number, boolean, json
+  description     String?
+  
+  updatedAt       DateTime @updatedAt
+}
+
+model EmailTemplate {
+  id              String   @id @default(uuid())
+  name            String   @unique
+  subject         String
+  body            String
+  variables       String?  // JSON array of available variables
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model PricingTier {
+  id              String   @id @default(uuid())
+  name            String
+  description     String?
+  basePrice       Float
+  features        String   // JSON array
+  isPopular       Boolean  @default(false)
+  sortOrder       Int      @default(0)
+  isActive        Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AvailableSlot {
+  id              String   @id @default(uuid())
+  dayOfWeek       Int      // 0-6 (Sunday-Saturday)
+  startTime       String   // HH:MM format
+  endTime         String   // HH:MM format
+  isAvailable     Boolean  @default(true)
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model BlockedDate {
+  id              String   @id @default(uuid())
+  date            DateTime
+  reason          String?
+  
+  createdAt       DateTime @default(now())
+}
