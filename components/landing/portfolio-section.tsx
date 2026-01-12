@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -12,6 +13,7 @@ const projects = [
   {
     id: 1,
     title: "TechFlow SaaS",
+    slug: "techflow-saas",
     category: "Corporate",
     description: "Modern SaaS platform with sleek UI/UX design",
     image: "https://picsum.photos/seed/techflow/600/400",
@@ -20,6 +22,7 @@ const projects = [
   {
     id: 2,
     title: "StyleHub Fashion",
+    slug: "stylehub-fashion",
     category: "E-Commerce",
     description: "High-end fashion e-commerce with 500+ products",
     image: "https://picsum.photos/seed/stylehub/600/400",
@@ -28,6 +31,7 @@ const projects = [
   {
     id: 3,
     title: "FitLife Gym",
+    slug: "fitlife-gym",
     category: "Membership",
     description: "Fitness membership portal with booking system",
     image: "https://picsum.photos/seed/fitlife/600/400",
@@ -36,6 +40,7 @@ const projects = [
   {
     id: 4,
     title: "Artisan Bakery",
+    slug: "artisan-bakery",
     category: "E-Commerce",
     description: "Local bakery with online ordering system",
     image: "https://picsum.photos/seed/bakery/600/400",
@@ -44,6 +49,7 @@ const projects = [
   {
     id: 5,
     title: "Creative Studio",
+    slug: "creative-studio",
     category: "Portfolio",
     description: "Photography portfolio with stunning galleries",
     image: "https://picsum.photos/seed/creative/600/400",
@@ -52,6 +58,7 @@ const projects = [
   {
     id: 6,
     title: "LegalPro Firm",
+    slug: "legalpro-firm",
     category: "Corporate",
     description: "Professional law firm website with case studies",
     image: "https://picsum.photos/seed/legalpro/600/400",
@@ -141,10 +148,12 @@ export function PortfolioSection() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity z-10" />
                 <div className="absolute bottom-4 left-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <Button size="sm" variant="secondary" className="w-full">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    View Project
-                  </Button>
+                  <Link href={`/projects/${project.slug}`}>
+                    <Button size="sm" variant="secondary" className="w-full">
+                      <ExternalLink className="h-4 w-4 mr-2" />
+                      View Project
+                    </Button>
+                  </Link>
                 </div>
               </div>
 
